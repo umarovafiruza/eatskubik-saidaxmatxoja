@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EatsKubik 3D - Кубики Едоки IO</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Google Fonts for crisp Roblox/IO game typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Game Container -->
+    <div id="game-container">
+        <!-- Canvas target for Three.js WebGL 3D scene -->
+        <canvas id="game-canvas"></canvas>
+
+        <!-- 3D World Floating Labels Overlay Container -->
+        <div id="floating-labels-container"></div>
+
+        <!-- Main UI Overlay -->
+        <div id="ui-overlay">
+            
+            <!-- TOP LEFT STATS BAR -->
+            <div class="top-left-stats">
+                <!-- Wins/Crown Box -->
+                <div class="stat-card crown-card">
+                    <div class="stat-icon crown-icon">
+                        <svg viewBox="0 0 24 24" width="28" height="28">
+                            <path fill="#FFD700" stroke="#B8860B" stroke-width="1.5" d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/>
+                        </svg>
+                    </div>
+                    <span id="wins-count" class="stat-value">0</span>
+                </div>
+
+                <!-- Score/Trophy Box -->
+                <div class="stat-card trophy-card">
+                    <div class="stat-icon trophy-icon">
+                        <svg viewBox="0 0 24 24" width="28" height="28">
+                            <path fill="#FFB700" stroke="#B8860B" stroke-width="1.5" d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 17.9V20H8v2h8v-2h-3v-2.1c2.12-.39 3.79-2.06 4.39-4.94C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/>
+                        </svg>
+                    </div>
+                    <span id="score-count" class="stat-value">31</span>
+                </div>
+            </div>
+
+            <!-- LEFT ACTION BUTTONS -->
+            <div class="left-action-buttons">
+                <!-- Skins Button -->
+                <button id="btn-skins" class="game-btn purple-btn">
+                    <div class="btn-icon face-icon">
+                        <svg viewBox="0 0 36 36" width="30" height="30">
+                            <rect width="36" height="36" rx="6" fill="#FFE082" stroke="#F57F17" stroke-width="2"/>
+                            <rect x="7" y="10" width="8" height="6" fill="#37474F"/>
+                            <rect x="21" y="10" width="8" height="6" fill="#37474F"/>
+                            <rect x="10" y="24" width="16" height="4" fill="#37474F"/>
+                        </svg>
+                    </div>
+                    <span class="btn-text">Скины</span>
+                </button>
+
+                <!-- Auto Button -->
+                <button id="btn-auto" class="game-btn purple-btn">
+                    <div class="btn-icon sword-icon">
+                        <svg viewBox="0 0 24 24" width="26" height="26">
+                            <path fill="#E0E0E0" stroke="#424242" stroke-width="1.5" d="M6.92 5L5 6.92l5.07 5.07-4.14 4.14-1.42-.71L3 16.91l4.09 4.09 1.49-1.49-.71-1.42 4.14-4.14L17.08 19 19 17.08 6.92 5z"/>
+                            <path fill="#FF5252" d="M19 3l-4 4 2 2 4-4z"/>
+                        </svg>
+                    </div>
+                    <span class="btn-text">Авто</span>
+                </button>
+
+                <!-- Shoot Mass Button ("Отдать / Otish") -->
+                <button id="btn-shoot" class="game-btn orange-btn">
+                    <div class="btn-icon shoot-icon">
+                        <svg viewBox="0 0 24 24" width="26" height="26">
+                            <circle cx="12" cy="12" r="9" fill="none" stroke="#FFFFFF" stroke-width="2.5"/>
+                            <circle cx="12" cy="12" r="3" fill="#FFEB3B"/>
+                            <path d="M12 1v4M12 19v4M1 12h4M19 12h4" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <span class="btn-text">Огонь [E / ПКМ]</span>
+                </button>
+            </div>
+
+            <!-- ACTIVE BUFF STATUS INDICATOR -->
+            <div id="active-buff-indicator" class="active-buff-indicator" style="display: none;">
+                <span id="buff-icon">🧲</span>
+                <span id="buff-text">SUPER MAGNIT (6s)</span>
+            </div>
+
+            <!-- TOP RIGHT HEADER ICONS -->
+            <div class="top-right-actions">
+                <!-- Live FPS Counter Badge -->
+                <div id="fps-badge" class="fps-badge">⚡ <span id="fps-num">60</span> FPS</div>
+
+                <!-- Low-Spec / Turbo FPS Quality Toggle Button -->
+                <button id="btn-quality" class="header-circle-btn quality-btn" title="Ускорение FPS / Слабый ПК">
+                    <span class="quality-icon">⚡</span>
+                </button>
+
+                <!-- Music Toggle Button -->
+                <button id="btn-music" class="header-circle-btn music-btn" title="Музыка">
+                    <span class="music-note-icon">🎵</span>
+                </button>
+
+                <!-- Lucky Wheel Button -->
+                <button id="btn-wheel" class="header-circle-btn wheel-btn" title="Колесо фортуны">
+                    <div class="wheel-icon-graphic"></div>
+                </button>
+
+                <!-- Daily Gift Button -->
+                <button id="btn-gift" class="header-circle-btn gift-btn" title="Подарок">
+                    <svg viewBox="0 0 24 24" width="24" height="24">
+                        <path fill="#AB47BC" d="M20 6h-3.17c.42-.61.67-1.35.67-2.16C17.5 2.05 15.95.5 14.16.5c-1.39 0-2.58.82-3.16 2.02C10.42 1.32 9.23.5 7.84.5 6.05.5 4.5 2.05 4.5 3.84c0 .81.25 1.55.67 2.16H2v4h2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10h2V6zM7.84 2.5c.74 0 1.34.6 1.34 1.34 0 .74-.6 1.34-1.34 1.34-.74 0-1.34-.6-1.34-1.34 0-.74.6-1.34 1.34-1.34zm6.32 0c.74 0 1.34.6 1.34 1.34 0 .74-.6 1.34-1.34 1.34-.74 0-1.34-.6-1.34-1.34 0-.74.6-1.34 1.34-1.34zM11 8v12H6V8h5zm7 12h-5V8h5v12z" fill="#FFEB3B"/>
+                    </svg>
+                </button>
+
+                <!-- Exit / Settings Button -->
+                <button id="btn-exit" class="header-circle-btn exit-btn" title="Выход">
+                    <svg viewBox="0 0 24 24" width="22" height="22">
+                        <path fill="#FFFFFF" d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- TOP RIGHT LEADERBOARD -->
+            <div id="leaderboard-panel" class="leaderboard-card">
+                <div class="leaderboard-row active-rank"><span class="rank-num">1.</span> <span class="rank-name">Nathan</span></div>
+                <div class="leaderboard-row"><span class="rank-num">2.</span> <span class="rank-name">G3N3R4LZ</span></div>
+                <div class="leaderboard-row"><span class="rank-num">3.</span> <span class="rank-name">vortexP8</span></div>
+                <div class="leaderboard-row"><span class="rank-num">4.</span> <span class="rank-name">n0va5</span></div>
+                <div class="leaderboard-row"><span class="rank-num">5.</span> <span class="rank-name">Oliver</span></div>
+            </div>
+
+            <!-- BOTTOM RIGHT SPEED BOOST BUTTON (Desktop) -->
+            <div class="bottom-right-banner">
+                <button id="btn-speed-boost" class="boost-banner-btn">
+                    <div class="boost-icon-box">
+                        <svg viewBox="0 0 24 24" width="28" height="28">
+                            <path fill="#FFFFFF" d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H9l2 4H8L6 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4zM10 14.5v-5l4.5 2.5-4.5 2.5z"/>
+                        </svg>
+                    </div>
+                    <div class="boost-text-box">
+                        <div class="boost-title">СМОТРИ РЕКЛАМУ И</div>
+                        <div class="boost-subtitle">ПОЛУЧИ 3.5X СКОРОСТЬ</div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- TOUCH JOYSTICK (For Mobile/Touch devices) -->
+            <div id="joystick-zone">
+                <div id="joystick-base">
+                    <div id="joystick-thumb"></div>
+                </div>
+            </div>
+
+            <!-- MOBILE ACTION BUTTONS (Right Side) -->
+            <div id="mobile-action-controls" class="mobile-action-controls">
+                <button id="btn-mobile-boost" class="mobile-action-btn boost-btn" title="Ускорение">
+                    <span>⚡</span>
+                    <span class="mobile-btn-sub">СПРИНТ</span>
+                </button>
+                <button id="btn-mobile-shoot" class="mobile-action-btn shoot-btn" title="Огонь / Otish">
+                    <span>🎯</span>
+                    <span class="mobile-btn-sub">ОГОНЬ</span>
+                </button>
+                <button id="btn-mobile-auto" class="mobile-action-btn auto-btn" title="Автопилот">
+                    <span>⚔️</span>
+                    <span class="mobile-btn-sub">АВТО</span>
+                </button>
+            </div>
+
+        </div>
+
+        <!-- MODALS -->
+
+        <!-- SKINS MODAL -->
+        <div id="skins-modal" class="modal-backdrop hidden">
+            <div class="modal-box skins-modal-box">
+                <button class="modal-close-btn">&times;</button>
+                <h2 class="modal-title">ВЫБОР СКИНА</h2>
+
+                <div class="skins-grid">
+                    <div class="skin-item active" data-skin="default">
+                        <div class="skin-color-box blue">🙂</div>
+                        <span>Классик</span>
+                    </div>
+                    <div class="skin-item" data-skin="yellow-cool">
+                        <div class="skin-color-box yellow">😎</div>
+                        <span>Крутой</span>
+                    </div>
+                    <div class="skin-item" data-skin="red-angry">
+                        <div class="skin-color-box red">😡</div>
+                        <span>Злой</span>
+                    </div>
+                    <div class="skin-item" data-skin="ninja">
+                        <div class="skin-color-box dark">🥷</div>
+                        <span>Ниндзя</span>
+                    </div>
+                    <div class="skin-item" data-skin="robot">
+                        <div class="skin-color-box cyan">🤖</div>
+                        <span>Робот</span>
+                    </div>
+                    <div class="skin-item" data-skin="gold">
+                        <div class="skin-color-box gold">👑</div>
+                        <span>Золотой</span>
+                    </div>
+                </div>
+
+                <button id="btn-equip-skin" class="modal-action-btn gold-btn">ВЫБРАТЬ</button>
+            </div>
+        </div>
+
+        <!-- LUCKY WHEEL MODAL -->
+        <div id="wheel-modal" class="modal-backdrop hidden">
+            <div class="modal-box wheel-modal-box">
+                <button class="modal-close-btn">&times;</button>
+                <h2 class="modal-title">КОЛЕСО ФОРТУНЫ</h2>
+                
+                <div class="wheel-container">
+                    <div class="wheel-pointer">▼</div>
+                    <div id="wheel-spinner" class="wheel-disc">
+                        <div class="wheel-segment" style="--i:0; --cls:#ff5252;">+100</div>
+                        <div class="wheel-segment" style="--i:1; --cls:#ffb74d;">3.5X Скорость</div>
+                        <div class="wheel-segment" style="--i:2; --cls:#4caf50;">+500</div>
+                        <div class="wheel-segment" style="--i:3; --cls:#29b6f6;">Скин 😎</div>
+                        <div class="wheel-segment" style="--i:4; --cls:#ab47bc;">+1000</div>
+                        <div class="wheel-segment" style="--i:5; --cls:#ec407a;">+1 Корона</div>
+                    </div>
+                </div>
+
+                <button id="btn-spin-wheel" class="modal-action-btn green-btn">КРУТИТЬ!</button>
+            </div>
+        </div>
+
+        <!-- DAILY GIFT MODAL -->
+        <div id="gift-modal" class="modal-backdrop hidden">
+            <div class="modal-box gift-modal-box">
+                <button class="modal-close-btn">&times;</button>
+                <h2 class="modal-title">ЕЖЕДНЕВНЫЙ ПОДАРОК</h2>
+                <div class="gift-box-icon">🎁</div>
+                <p class="gift-desc">Заходи каждый день и получай уникальные награды и ускорения!</p>
+                <button id="btn-claim-gift" class="modal-action-btn green-btn">ЗАБРАТЬ +250 ОЧКОВ</button>
+            </div>
+        </div>
+
+        <!-- GAME OVER / RESPAWN MODAL -->
+        <div id="gameover-modal" class="modal-backdrop hidden">
+            <div class="modal-box gameover-box">
+                <h2 class="modal-title red-title">ТЕБЯ СЪЕЛИ!</h2>
+                <div class="final-score-display">
+                    <div>Ваш результат: <span id="final-score" class="highlight-text">0</span></div>
+                    <div>Место в рейтинге: <span id="final-rank" class="highlight-text">#12</span></div>
+                </div>
+                <button id="btn-respawn" class="modal-action-btn green-btn big-btn">ИГРАТЬ СНОВА</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Offline Three.js Library -->
+    <script src="js/three.min.js"></script>
+    <!-- Standalone 3D Game Engine Script -->
+    <script src="js/game3d.js"></script>
+</body>
+</html>
